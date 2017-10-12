@@ -1,0 +1,122 @@
+# script to read from excel and insert them into table and write a log file
+import pandas as pd
+import os
+import datetime
+import pyodbc
+
+
+#################################################################################################################
+# functions to be used in this script
+#################################################################################################################
+# function to check if the payroll ID and out_time is present as in_time for the same payroll ID
+# sends True or False as output
+def out_time_present_as_in_time(payroll, out_time):
+    if ((df_in['ID'] == payroll) & (df_in['In Punch'] == out_time)).any():
+        return True
+    else:
+        return False
+
+
+# replaces spaces in current date time and returns the text
+def get_curr_dt_time():
+    dic = {" ": "-", ":": "-", ".": "-"}  # dictionary of items to replace in current time with '-'
+    curr_dt_time = str(datetime.datetime.now())  # gets current data timestamp
+    for i, j in dic.items():
+        curr_dt_time = curr_dt_time.replace(i, j)
+    return curr_dt_time
+
+
+# inserts record into TABLE with parameters passed to this function
+# centre will sent only for CP type punches, if not sent None is used as default
+def insert_rec(payroll, clk_time, clk_type, centre=None):
+    global cursor, sql
+    # pad payroll with left zeroes to 8 char, pass it along with other parameters to execute SQL statement
+    cursor.execute(sql, '%08d' % payroll, clk_time, clk_type, centre, datetime.datetime.now())
+#################################################################################################################
+
+#################################################################################################################
+# parameters to updated by user
+#################################################################################################################
+# Input Excel file name and location
+in_file = r'Test SQL Punches.xlsx'
+new_filename = r'Test SQL Punches-done.xlsx'
+# log file name and location
+log_file = open(
+    r'Clk_data_load-' + get_curr_dt_time() + '.txt',
+    'w')
+# sql server details below to which connection be made
+server = 'XXXXX'
+database = 'XXXXX'
+user_id = 'XXXXX'
+password = 'XXXXX'
+
+# sql insert statement with parameters to pass marked as '?' when executing it.
+sql = """
+INSERT INTO TABLE(ID,STATUS,EMP,SEQ,TIME,TYPE,CENTRE,POS,CREATION_TIME)
+VALUES(1,1,?, (select coalesce(max(SEQ), 0) + 1 from TABLE WITH (HOLDLOCK, UPDLOCK) WHERE ID=1),
+?,?,?,'',?)
+"""
+#################################################################################################################
+
+#################################################################################################################
+# Main script that does the magic
+#################################################################################################################
+# check if the input excel file exists in the location, if not quit running
+if os.path.exists(in_file) == False:
+    print("File does not exist. Aborting program")
+    quit()
+
+# opening a connection to sql server with details of server, user_id and password supplied
+cnxn = pyodbc.connect(
+    'DRIVER={SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + user_id + ';PWD=' + password)
+# open cursor
+cursor = cnxn.cursor()
+
+# read the input excel file and load them into pandas dataframe
+df_in = pd.read_excel(in_file)
+
+# iterate rows from dataframe one by one and do actions for the read row
+for row in df_in.itertuples():
+    if not pd.isnull(row[5]):  # dept is not empty
+        if not pd.isnull(row[3]):  # in_time is not empty
+            new_rec = [row[1], row[3], 'CP', row[5]]  # create new record
+            insert_rec(row[1].item(), row[3], 'CP', row[5].item())  # insert new record for CP type as dept is empty
+            print(new_rec, file=log_file)  # print the details into log file
+        else:
+            print(['Warning!', row[1], 'Skipped In-Time as it was N/A'], file=log_file)
+        if not pd.isnull(row[4]):  # dept is not empty and out_time is not empty
+            if out_time_present_as_in_time(row[1], row[4]) is False:  # check if out_time not present as in_time
+                new_rec = [row[1], row[4], 'OF']
+                insert_rec(row[1].item(), row[4], 'OF')
+                print(new_rec, file=log_file)
+        else:
+            print(['Warning!', row[1], 'Skipped Out-Time as it was N/A'], file=log_file)
+    else:
+        if not pd.isnull(row[3]):  # dept is empty and in_time is not empty
+            new_rec = [row[1], row[3], 'ON']
+            insert_rec(row[1].item(), row[3], 'ON')
+            print(new_rec, file=log_file)
+        else:
+            print(['Warning!', row[1], 'Skipped In-Time as it was N/A'], file=log_file)
+        if not pd.isnull(row[4]):  # dept is empty and out_time is not empty
+            if out_time_present_as_in_time(row[1], row[4]) is False:  # check if out_time not present as in_time
+                new_rec = [row[1], row[4], 'OF']
+                insert_rec(row[1].item(), row[4], 'OF')
+                print(new_rec, file=log_file)
+        else:
+            print(['Warning!', row[1], 'Skipped Out-Time as it was N/A'], file=log_file)
+
+# commit SQL transactions and close cursor
+cnxn.commit()
+cnxn.close()
+# close log file
+log_file.close()
+# rename in file as completed
+os.rename(in_file,new_filename)
+
+# below code to write the output in excel file, if needed.
+# df_out.loc[len(df_out)] = new_rec
+# writer = pd.ExcelWriter('Test_Out_Punches.xlsx')
+# df_out.to_excel(writer, 'Sheet1')
+# writer.save()
+#################################################################################################################

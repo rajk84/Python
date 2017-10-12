@@ -1,0 +1,12 @@
+import datetime
+
+# replaces spaces & semi-colons in current date time and returns the text with '-' replaced.
+# add this to file names with current date time stamp on it
+def get_curr_dt_time():
+    dic = {" ": "-", ":": "-", ".": "-"}  # dictionary of items to replace in current time with '-'
+    curr_dt_time = str(datetime.datetime.now())  # gets current data timestamp
+    for i, j in dic.items():
+        curr_dt_time = curr_dt_time.replace(i, j)
+    return curr_dt_time
+
+log_file = 'log_file' + get_curr_dt_time() + '.txt'

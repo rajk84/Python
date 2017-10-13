@@ -1,0 +1,8 @@
+import os
+
+in_file = r'Test_file.txt'
+
+# check if the input excel file exists in the location, if not quit running
+if os.path.exists(in_file) == False:
+    print("File does not exist. Aborting program")
+    quit()

@@ -1,0 +1,5 @@
+import datetime, pytz
+
+# get yesterday's date using current time in CST
+yesterday = (datetime.datetime.now(tz=pytz.timezone('America/Chicago')) - datetime.timedelta(days=1)).strftime(%Y-%m-%d')
+print(yesterday, 'CST')

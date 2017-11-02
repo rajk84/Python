@@ -1,0 +1,20 @@
+import requests
+
+# url, params and headers used to get data from API
+data_url = "https://site1.com/v1/measures/8746772/data"
+data_params = {"from": "2017-11-02", "limit": "100"}
+data_headers = {'accept': 'application/json', 'authorization': "token"}
+request = requests.get(url=data_url, params=data_params, headers=data_headers)
+if request.status_code != 200:
+  print("couldn't complete get data request")
+  request.raise_for_status()
+  quit()
+
+token_url = 'https://site2.com/v1/token'
+token_params = {"grant_type": "client_credentials"}
+token_headers = {"content-type": "application/json"}
+request = requests.post(url=token_url, params=token_params, headers=token_headers)
+if request.status_code != 200:
+  print("couldn't complete access token request")
+  request.raise_for_status()
+  quit()

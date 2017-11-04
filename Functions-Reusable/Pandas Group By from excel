@@ -1,0 +1,7 @@
+import pandas as pd
+
+df = pd.read_excel('future_dated_adjust_by_codes_nov4.xlsx',sheetname='absence_adjust')
+df1 = pd.DataFrame(df.groupby(['EMP','ID_NUM'])['HRS'].agg('sum')).reset_index()
+
+# df1 is a new dataframe created from group by of EMP and ID_NUM and sum column of HRS from df dataframe.
+# reset index makes sure df1 has 3 columns EMP, ID_NUM and HRS created with right values.

@@ -1,0 +1,9 @@
+import pandas as pd
+
+df = pd.read_excel('future_dated_adjust_by_codes_nov4.xlsx',sheetname='absence_adjust')
+
+# 2 ways to select rows based on multiple column values
+# Fastest and efficient way (takes 1/2 time from second method)
+print(df1.iloc[np.where((df1.EMP.values == 1006987) & (df1.ID_NUM.values == 2))])
+# Not so fast to execute but easy to read
+print(df1.loc[(df1['EMP']==1006987) & (df1['ID_NUM'] == 2)])

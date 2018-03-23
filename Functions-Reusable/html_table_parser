@@ -1,3 +1,4 @@
+#courtesy http://srome.github.io/Parsing-HTML-Tables-in-Python-with-BeautifulSoup-and-pandas/
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup

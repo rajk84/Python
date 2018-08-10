@@ -1,7 +1,7 @@
 import datetime, pytz
 
 #New way
-yesterday = (datetime.datetime.now(tz=pytz.timezone('America/Chicago')) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+yesterday = (datetime.datetime.now(tz=pytz.timezone('America/Chicago')) - datetime.timedelta(days=1)).strftime('%Y-%m-%d_%H-%M-%S')
 print(yesterday, 'CST')
 
 #Old way

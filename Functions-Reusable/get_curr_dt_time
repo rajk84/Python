@@ -1,5 +1,10 @@
-import datetime
+import datetime, pytz
 
+#New way
+yesterday = (datetime.datetime.now(tz=pytz.timezone('America/Chicago')) - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+print(yesterday, 'CST')
+
+#Old way
 # replaces spaces & semi-colons in current date time and returns the text with '-' replaced.
 # add this to file names with current date time stamp on it
 def get_curr_dt_time():

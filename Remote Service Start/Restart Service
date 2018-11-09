@@ -1,0 +1,34 @@
+import os, shutil, subprocess, sys, pytz, datetime, time
+
+date_time = (datetime.datetime.now(tz=pytz.timezone('America/Chicago'))).strftime('%Y-%m-%d_%H-%M-%S')
+logfile = open(r'C:\log_file' + date_time + r'.txt', 'w')
+
+# stop service
+batfilename = r'C:\Stop.bat' #bat file that has command to stop the service, refer to .bat file for details
+p = subprocess.run(batfilename, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if p.returncode != 0:
+    if p.returncode == 1062:
+        print('Service Already Stopped', file=logfile)
+    else:
+        print(p.stdout, file=logfile)
+        sys.exit()
+else:
+    print('Serice Stopped successfully', file=logfile)
+
+#Delete temp folders
+deletefolderpath = r'<C:\folder_to_delete>'
+if os.path.exists(deletefolderpath):
+        print('delete ' + deletefolderpath, file=logfile)
+        shutil.rmtree(deletefolderpath)
+    else:
+        print('Delete Folder does not exist', file=logfile)
+
+# start service
+batfilename = r'C:\Start.bat' #bat file that has command to start the service, refer to .bat file for details
+p = subprocess.run(batfilename, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+if p.returncode != 0:
+    if p.returncode == 1062:
+        print('Service Already Running', file=logfile)
+    else:
+        print(p.stdout, file=logfile)
+        sys.exit()

@@ -1,0 +1,13 @@
+import os
+
+location = input('Enter location: ')
+
+if not os.path.exists(location):
+    print('Location does not exist, Try again!')
+    quit()
+
+master = {}
+for (path, folders, files) in os.walk(location):
+    master[location] = {'folders': folders, 'files': files}
+
+pdf_files = [x for x in master[location]['files'] if '.pdf' in x]
